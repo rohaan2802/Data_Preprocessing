@@ -1,77 +1,94 @@
-# Data Preprocessing
+# Data Preprocessing (ML for Robotics A#02)
 
-Data cleaning, imputation, and feature-scaling notebooks for ML-for-robotics coursework, including a real **diabetes** CSV with missing values.
+Assignment on **cleaning, imputation, and scaling** before learning: a small **customer** notebook and a full pipeline on an **unclean diabetes** CSV (~1009 rows).
 
-## Overview
+**Rolls referenced:** i222327 (and i222391 on a joint PDF) · Spring 2026  
+[rohaan2802](https://github.com/rohaan2802)
 
-**Assignment 2 — ML for Robotics (Spring 2026)** focused on practical preprocessing:
+---
 
-- Missing-value handling (mean / median fill, `SimpleImputer`)
-- Feature scaling with `StandardScaler`
-- Metric selection notes for regression vs classification
-- End-to-end cleaning of an unclean medical dataset
+## Table of contents
 
-## Repository Contents
+1. [Files](#files)
+2. [`Data_Preprocessing.ipynb`](#data_preprocessingipynb)
+3. [`ML_For_Robo.ipynb` + diabetes CSV](#ml_for_roboipynb--diabetes-csv)
+4. [Metric discussion](#metric-discussion)
+5. [How to run](#how-to-run)
 
-| File | Description |
-|------|-------------|
-| `Data_Preprocessing.ipynb` | Customer-data demos: fillna, SimpleImputer, scaling, small regression comparison |
-| `ML_For_Robo.ipynb` | Full pipeline on `diabetes_unclean.csv` |
-| `diabetes_unclean.csv` | Unclean diabetes-related tabular data (~1,000 rows) |
-| `Asg-2-ML for Robotics-Spring 2026-NU.pdf` | Assignment brief |
-| `i222391_i222327.pdf` | Submission / report PDF |
+---
 
-## Dataset: `diabetes_unclean.csv`
+## Files
 
-| Column | Role |
-|--------|------|
-| `ID`, `No_Pation` | Identifiers |
-| `Gender`, `AGE` | Demographics |
-| `Urea`, `Cr`, `HbA1c`, `Chol`, `TG`, `HDL`, `LDL`, `VLDL`, `BMI` | Clinical / lab features |
-| `CLASS` | Label / category |
+| File | Role |
+|------|------|
+| `Data_Preprocessing.ipynb` | Toy customers: `fillna` / `SimpleImputer` / scaler / tiny regression |
+| `ML_For_Robo.ipynb` | Real-ish medical table, missingness, mean vs median, scale, table plots |
+| `diabetes_unclean.csv` | Source table |
+| `Asg-2-ML for Robotics-Spring 2026-NU.pdf` | Brief |
+| `i222391_i222327.pdf` | Submission / report |
 
-`ML_For_Robo.ipynb` counts missingness, builds mean- and median-imputed copies, drops ID-like / categorical columns, then applies `StandardScaler`.
+---
 
-## Notebook Highlights
+## `Data_Preprocessing.ipynb`
 
-### `Data_Preprocessing.ipynb`
+**Cell 1 — mean fill**
 
-- Toy customer tables with intentional `NaN`s  
-- Cleaning via column means and `SimpleImputer`  
-- Scaling plus discussion of **MAE / R²** (regression) vs precision-style metrics (classification)
+Customer rows with `Age`, `Income`, `SpendingScore` and planted `NaN`s. `df.fillna(df.mean(numeric_only=True))`, then `StandardScaler`.
 
-### `ML_For_Robo.ipynb`
+**Cell 2 — sklearn imputer**
 
-1. Load and `describe()` the diabetes CSV  
-2. Count missing values  
-3. Fill with **mean** and **median**  
-4. Drop non-scaled columns (`ID`, `No_Pation`, `Gender`, `AGE`, `CLASS`)  
-5. Apply `StandardScaler` and round for display  
-6. Tabular before/after visualization helpers  
+Six customers; `SimpleImputer` + `train_test_split` + scaler (classic sklearn preprocessing chain).
 
-## Tech Stack
+**Cell 3 — “Comparison”**
 
-Python 3 · Jupyter · pandas · NumPy · Matplotlib · scikit-learn (`SimpleImputer`, `StandardScaler`, `train_test_split`, `LinearRegression`, metrics)
+Fits a small `LinearRegression` and discusses:
 
-## Getting Started
+- Regression → **MAE** (and R² as variance explained).  
+- Classification → **precision**-style metrics (text block in the notebook).
+
+This is the viva hook: **wrong metric = wrong model choice**.
+
+---
+
+## `ML_For_Robo.ipynb` + diabetes CSV
+
+**Header:** `ID,No_Pation,Gender,AGE,Urea,Cr,HbA1c,Chol,TG,HDL,LDL,VLDL,BMI,CLASS`  
+**Rows:** 1009 (file reports `nrows: 1009`). `CLASS` example values include `N`.
+
+Pipeline:
+
+1. `read_csv("diabetes_unclean.csv")`, `head()`, `describe()`.  
+2. `isnull().sum()` and total missing count.  
+3. `df_Mean = fillna(mean)`, `df_Median = fillna(median)`; reprint missing totals (should be 0 on numeric cols).  
+4. Drop `ID`, `No_Pation`, `Gender`, `AGE`, `CLASS` before scaling (IDs + categoricals not z-scored).  
+5. `StandardScaler.fit_transform` → `round(4)`.  
+6. `plot_table` helper: matplotlib tables for **before cleaning / after cleaning / after scaling** (first 10 rows).
+
+Mean vs median: median is safer when lab values are **skewed or outlier-heavy** (typical for `Cr`, lipids). The notebook keeps both copies so you can justify a choice in the PDF.
+
+---
+
+## Metric discussion
+
+From the customer notebook explanation block:
+
+| Task | Prefer |
+|------|--------|
+| Regression | MAE (interpretable units), R² (fit quality) |
+| Classification | Precision / related rates — not MAE |
+
+---
+
+## How to run
 
 ```bash
 pip install pandas numpy matplotlib scikit-learn jupyter
 jupyter notebook ML_For_Robo.ipynb
 ```
 
-Keep `diabetes_unclean.csv` beside `ML_For_Robo.ipynb`.
+Keep `diabetes_unclean.csv` in the same directory as that notebook.
 
-## Project Structure
-
-```
-Data_Preprocessing/
-├── Data_Preprocessing.ipynb
-├── ML_For_Robo.ipynb
-├── diabetes_unclean.csv
-├── Asg-2-ML for Robotics-Spring 2026-NU.pdf
-└── i222391_i222327.pdf
-```
+---
 
 ## Author
 
